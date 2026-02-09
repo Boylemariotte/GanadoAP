@@ -4,10 +4,11 @@ import { Livestock } from '../types/livestock';
 import { useAuth } from '../contexts/AuthContext';
 import MediaUpload from './MediaUpload';
 import DropdownMenu from './DropdownMenu';
+import { createLivestock } from '../services/api';
 
 const AddProduct: React.FC = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState<Partial<Livestock>>({
@@ -34,15 +35,17 @@ const AddProduct: React.FC = () => {
       phone: '3164827334',
       email: 'info@ganaderiaap.com',
       rating: 4.8
-    },
-    images: [],
-    videos: []
+    }
   });
 
-  const [productImages, setProductImages] = useState<string[]>([]);
-  const [productVideos, setProductVideos] = useState<string[]>([]);
+  const [productImages, setProductImages] = useState<File[]>([]);
+  const [productVideos, setProductVideos] = useState<File[]>([]);
 
   const [newVaccine, setNewVaccine] = useState('');
+
+  // ... imports moved to top
+
+  // ... imports
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,23 +59,32 @@ const AddProduct: React.FC = () => {
     }
 
     try {
-      // Aquí iría la lógica para guardar en la base de datos
-      // Por ahora, simulamos guardando en localStorage
-      const existingProducts = JSON.parse(localStorage.getItem('livestock-products') || '[]');
-      const newProduct: Livestock = {
-        ...formData as Livestock,
-        id: Date.now().toString(),
-        vaccinations: formData.vaccinations || [],
-        images: productImages,
-        videos: productVideos
-      };
-      
-      existingProducts.push(newProduct);
-      localStorage.setItem('livestock-products', JSON.stringify(existingProducts));
+      const formDataToSend = new FormData();
+
+      // Append simple fields
+      Object.entries(formData).forEach(([key, value]) => {
+        if (key === 'seller' || key === 'offspring' || key === 'vaccinations') {
+          formDataToSend.append(key, JSON.stringify(value));
+        } else {
+          formDataToSend.append(key, String(value));
+        }
+      });
+
+      // Append files
+      productImages.forEach(file => {
+        formDataToSend.append('media', file);
+      });
+      productVideos.forEach(file => {
+        formDataToSend.append('media', file);
+      });
+
+      // Call API
+      await createLivestock(formDataToSend);
 
       alert('✅ Producto añadido exitosamente');
       navigate('/');
     } catch (error) {
+      console.error(error);
       alert('❌ Error al añadir el producto');
     } finally {
       setIsSubmitting(false);
@@ -119,9 +131,9 @@ const AddProduct: React.FC = () => {
         <div className="mg-container">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-              <img 
-                src="/logo.png" 
-                alt="GANADERIA AP Logo" 
+              <img
+                src="/logo.png"
+                alt="GANADERIA AP Logo"
                 style={{ height: '50px', width: 'auto', borderRadius: '50%' }}
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
@@ -153,10 +165,10 @@ const AddProduct: React.FC = () => {
                   required
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  style={{ 
-                    width: '100%', 
-                    padding: '0.75rem', 
-                    border: '2px solid var(--mg-border)', 
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    border: '2px solid var(--mg-border)',
                     borderRadius: '8px',
                     fontSize: '1rem'
                   }}
@@ -172,10 +184,10 @@ const AddProduct: React.FC = () => {
                   required
                   value={formData.breed}
                   onChange={(e) => setFormData(prev => ({ ...prev, breed: e.target.value }))}
-                  style={{ 
-                    width: '100%', 
-                    padding: '0.75rem', 
-                    border: '2px solid var(--mg-border)', 
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    border: '2px solid var(--mg-border)',
                     borderRadius: '8px',
                     fontSize: '1rem'
                   }}
@@ -192,10 +204,10 @@ const AddProduct: React.FC = () => {
                   min="0"
                   value={formData.age}
                   onChange={(e) => setFormData(prev => ({ ...prev, age: Number(e.target.value) }))}
-                  style={{ 
-                    width: '100%', 
-                    padding: '0.75rem', 
-                    border: '2px solid var(--mg-border)', 
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    border: '2px solid var(--mg-border)',
                     borderRadius: '8px',
                     fontSize: '1rem'
                   }}
@@ -212,10 +224,10 @@ const AddProduct: React.FC = () => {
                   min="0"
                   value={formData.weight}
                   onChange={(e) => setFormData(prev => ({ ...prev, weight: Number(e.target.value) }))}
-                  style={{ 
-                    width: '100%', 
-                    padding: '0.75rem', 
-                    border: '2px solid var(--mg-border)', 
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    border: '2px solid var(--mg-border)',
                     borderRadius: '8px',
                     fontSize: '1rem'
                   }}
@@ -232,10 +244,10 @@ const AddProduct: React.FC = () => {
                   min="0"
                   value={formData.price}
                   onChange={(e) => setFormData(prev => ({ ...prev, price: Number(e.target.value) }))}
-                  style={{ 
-                    width: '100%', 
-                    padding: '0.75rem', 
-                    border: '2px solid var(--mg-border)', 
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    border: '2px solid var(--mg-border)',
                     borderRadius: '8px',
                     fontSize: '1rem'
                   }}
@@ -251,10 +263,10 @@ const AddProduct: React.FC = () => {
                   required
                   value={formData.location}
                   onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                  style={{ 
-                    width: '100%', 
-                    padding: '0.75rem', 
-                    border: '2px solid var(--mg-border)', 
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    border: '2px solid var(--mg-border)',
                     borderRadius: '8px',
                     fontSize: '1rem'
                   }}
@@ -286,7 +298,7 @@ const AddProduct: React.FC = () => {
                 />
                 Es venta por lote
               </label>
-              
+
               {formData.isLot && (
                 <div style={{ marginTop: '1rem' }}>
                   <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--mg-text-muted)' }}>
@@ -297,10 +309,10 @@ const AddProduct: React.FC = () => {
                     min="2"
                     value={formData.lotSize}
                     onChange={(e) => setFormData(prev => ({ ...prev, lotSize: Number(e.target.value) }))}
-                    style={{ 
-                      width: '200px', 
-                      padding: '0.5rem', 
-                      border: '2px solid var(--mg-border)', 
+                    style={{
+                      width: '200px',
+                      padding: '0.5rem',
+                      border: '2px solid var(--mg-border)',
                       borderRadius: '8px',
                       fontSize: '1rem'
                     }}
@@ -318,10 +330,10 @@ const AddProduct: React.FC = () => {
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 rows={4}
-                style={{ 
-                  width: '100%', 
-                  padding: '0.75rem', 
-                  border: '2px solid var(--mg-border)', 
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '2px solid var(--mg-border)',
                   borderRadius: '8px',
                   fontSize: '1rem',
                   resize: 'vertical'
@@ -334,7 +346,7 @@ const AddProduct: React.FC = () => {
               <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--mg-text)' }}>
                 📋 Datos Técnicos
               </h3>
-              
+
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
                 <div>
                   <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--mg-text-muted)' }}>
@@ -345,10 +357,10 @@ const AddProduct: React.FC = () => {
                     min="0"
                     value={formData.births}
                     onChange={(e) => setFormData(prev => ({ ...prev, births: Number(e.target.value) }))}
-                    style={{ 
-                      width: '100%', 
-                      padding: '0.5rem', 
-                      border: '2px solid var(--mg-border)', 
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem',
+                      border: '2px solid var(--mg-border)',
                       borderRadius: '8px',
                       fontSize: '0.9rem'
                     }}
@@ -364,10 +376,10 @@ const AddProduct: React.FC = () => {
                     min="0"
                     value={formData.milkYield}
                     onChange={(e) => setFormData(prev => ({ ...prev, milkYield: Number(e.target.value) }))}
-                    style={{ 
-                      width: '100%', 
-                      padding: '0.5rem', 
-                      border: '2px solid var(--mg-border)', 
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem',
+                      border: '2px solid var(--mg-border)',
                       borderRadius: '8px',
                       fontSize: '0.9rem'
                     }}
@@ -383,10 +395,10 @@ const AddProduct: React.FC = () => {
                     min="0"
                     value={formData.gestationTime}
                     onChange={(e) => setFormData(prev => ({ ...prev, gestationTime: Number(e.target.value) }))}
-                    style={{ 
-                      width: '100%', 
-                      padding: '0.5rem', 
-                      border: '2px solid var(--mg-border)', 
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem',
+                      border: '2px solid var(--mg-border)',
                       borderRadius: '8px',
                       fontSize: '0.9rem'
                     }}
@@ -400,7 +412,7 @@ const AddProduct: React.FC = () => {
               <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--mg-text)' }}>
                 💉 Plan de Vacunación
               </h3>
-              
+
               <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
                 <input
                   type="text"
@@ -408,10 +420,10 @@ const AddProduct: React.FC = () => {
                   onChange={(e) => setNewVaccine(e.target.value)}
                   placeholder="Nombre de la vacuna"
                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addVaccine())}
-                  style={{ 
-                    flex: 1, 
-                    padding: '0.5rem', 
-                    border: '2px solid var(--mg-border)', 
+                  style={{
+                    flex: 1,
+                    padding: '0.5rem',
+                    border: '2px solid var(--mg-border)',
                     borderRadius: '8px',
                     fontSize: '0.9rem'
                   }}
@@ -431,8 +443,8 @@ const AddProduct: React.FC = () => {
                   <span
                     key={index}
                     className="mg-badge"
-                    style={{ 
-                      background: 'var(--mg-accent)', 
+                    style={{
+                      background: 'var(--mg-accent)',
                       color: 'var(--mg-text)',
                       border: '1px solid var(--mg-border)',
                       cursor: 'pointer'

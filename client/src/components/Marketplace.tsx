@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Livestock } from '../types/livestock';
-import { mockLivestock } from '../data/mockData';
+// import { mockLivestock } from '../data/mockData'; // Removed mock data
+import { getLivestock } from '../services/api'; // Import API service
 import ProductCard from './ProductCard';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -10,10 +11,28 @@ import DropdownMenu from './DropdownMenu';
 const Marketplace: React.FC = () => {
   const { user, logout, isOwner } = useAuth();
   const navigate = useNavigate();
-  const [livestock] = useState<Livestock[]>(mockLivestock);
+  const [livestock, setLivestock] = useState<Livestock[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [selectedPurpose, setSelectedPurpose] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('price-low');
   const [showSaleForm, setShowSaleForm] = useState<Livestock | null>(null);
+
+  useEffect(() => {
+    const fetchLivestock = async () => {
+      try {
+        const data = await getLivestock();
+        setLivestock(data);
+      } catch (err) {
+        setError('Error al cargar los productos');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLivestock();
+  }, []);
 
   const categories = [
     { value: 'all', label: 'Todos', icon: '🐄' },
@@ -53,9 +72,9 @@ const Marketplace: React.FC = () => {
         <div className="mg-container">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-              <img 
-                src="/logo.png" 
-                alt="GANADERIA AP Logo" 
+              <img
+                src="/logo.png"
+                alt="GANADERIA AP Logo"
                 style={{ height: '200px', width: 'auto', borderRadius: '50%' }}
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
@@ -70,7 +89,7 @@ const Marketplace: React.FC = () => {
               <div style={{ background: 'var(--mg-accent)', padding: '0.5rem 1.25rem', borderRadius: '50px', fontSize: '0.9rem', fontWeight: 600, color: 'var(--mg-text-muted)' }}>
                 {filteredAndSortedLivestock.length} ejemplares disponibles
               </div>
-              
+
               <DropdownMenu />
             </div>
           </div>
@@ -111,7 +130,11 @@ const Marketplace: React.FC = () => {
         </div>
 
         {/* Grid */}
-        {filteredAndSortedLivestock.length > 0 ? (
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '5rem 0' }}>Cargando productos...</div>
+        ) : error ? (
+          <div style={{ textAlign: 'center', padding: '5rem 0', color: 'red' }}>{error}</div>
+        ) : filteredAndSortedLivestock.length > 0 ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '2.5rem' }}>
             {filteredAndSortedLivestock.map(item => (
               <div key={item.id}>
@@ -121,7 +144,7 @@ const Marketplace: React.FC = () => {
                     <button
                       onClick={() => setShowSaleForm(item)}
                       className="mg-btn"
-                      style={{ 
+                      style={{
                         flex: 1,
                         background: '#dc2626',
                         color: 'white',
@@ -134,7 +157,7 @@ const Marketplace: React.FC = () => {
                 )}
                 {isOwner() && !item.available && (
                   <div style={{ marginTop: '1rem' }}>
-                    <div className="mg-badge" style={{ 
+                    <div className="mg-badge" style={{
                       width: '100%',
                       justifyContent: 'center',
                       background: '#ef4444',
@@ -154,7 +177,7 @@ const Marketplace: React.FC = () => {
             <p style={{ color: '#64748b' }}>Intenta ajustar tus filtros de búsqueda.</p>
           </div>
         )}
-        
+
         {/* Sale Form Modal */}
         {showSaleForm && (
           <SaleForm

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { mockLivestock } from '../data/mockData';
+// import { mockLivestock } from '../data/mockData'; // Removed
+import { getLivestockById } from '../services/api'; // Import API service
+import { Livestock } from '../types/livestock';
 import MediaGallery from './MediaGallery';
 import DropdownMenu from './DropdownMenu';
 
@@ -12,7 +14,25 @@ const ProductDetail: React.FC = () => {
   const [productImages, setProductImages] = useState<string[]>([]);
   const [productVideos, setProductVideos] = useState<string[]>([]);
 
-  const livestock = mockLivestock.find(item => item.id === id);
+  const [livestock, setLivestock] = useState<Livestock | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (!id) return;
+      try {
+        const data = await getLivestockById(id);
+        setLivestock(data);
+      } catch (error) {
+        console.error('Error fetching product:', error);
+        // navigate('/'); // Optional: redirect on error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id]); // Removed navigate dependency to avoid loops
 
   useEffect(() => {
     if (livestock) {
@@ -20,6 +40,10 @@ const ProductDetail: React.FC = () => {
       setProductVideos(livestock.videos || []);
     }
   }, [livestock]);
+
+  if (loading) {
+    return <div className="mg-app" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Cargando...</div>;
+  }
 
   if (!livestock) {
     return (
