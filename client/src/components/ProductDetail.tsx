@@ -9,7 +9,6 @@ import DropdownMenu from './DropdownMenu';
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [selectedImage, setSelectedImage] = useState(0);
   const [showTooltip, setShowTooltip] = useState(false);
   const [productImages, setProductImages] = useState<string[]>([]);
   const [productVideos, setProductVideos] = useState<string[]>([]);

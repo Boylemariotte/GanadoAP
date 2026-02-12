@@ -17,35 +17,45 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
   onMediaUpdate
 }) => {
   const { isOwner } = useAuth();
-  const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const [showAddMedia, setShowAddMedia] = useState(false);
+
+  // Combine images and videos into a single array with types
+  const mediaItems = [
+    ...images.map(url => ({ type: 'image', url })),
+    ...videos.map(url => ({ type: 'video', url }))
+  ];
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    
+
+    // This logic handles local preview updates. 
+    // In a real app, you might want to upload to server first or handle this differently.
+    const newImages = [...images];
+    const newVideos = [...videos];
+
     files.forEach(file => {
       if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
         const url = URL.createObjectURL(file);
-        
+
         if (file.type.startsWith('image/')) {
-          const newImages = [...images, url];
-          if (onMediaUpdate) onMediaUpdate(newImages, videos);
+          newImages.push(url);
         } else {
-          const newVideos = [...videos, url];
-          if (onMediaUpdate) onMediaUpdate(images, newVideos);
+          newVideos.push(url);
         }
       }
     });
 
+    if (onMediaUpdate) onMediaUpdate(newImages, newVideos);
     setShowAddMedia(false);
   };
 
   // Si no hay medios, mostrar placeholder
-  if (images.length === 0 && videos.length === 0) {
+  if (mediaItems.length === 0) {
     return (
-      <div style={{ 
-        height: '500px', 
-        border: '2px dashed var(--mg-border)', 
+      <div style={{
+        height: '500px',
+        border: '2px dashed var(--mg-border)',
         borderRadius: 'var(--mg-radius-lg)',
         display: 'flex',
         alignItems: 'center',
@@ -121,7 +131,7 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
               <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem', color: 'var(--mg-text)' }}>
                 Añadir Foto o Video
               </h3>
-              
+
               <div style={{
                 border: '2px dashed var(--mg-border)',
                 borderRadius: 'var(--mg-radius-md)',
@@ -149,7 +159,7 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                   Seleccionar Archivos
                 </label>
               </div>
-              
+
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
                 <button
                   onClick={() => setShowAddMedia(false)}
@@ -166,25 +176,40 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
     );
   }
 
-  // Si hay medios, mostrar galería normal
+  const currentMedia = mediaItems[selectedIndex];
+
   return (
     <div>
       {/* Media Principal */}
       <div style={{ marginBottom: '1.5rem', position: 'relative' }}>
-        {images.length > 0 && (
+        {currentMedia.type === 'image' ? (
           <img
-            src={images[selectedImage]}
-            alt={`${productName} - ${selectedImage + 1}`}
+            src={currentMedia.url}
+            alt={`${productName} - ${selectedIndex + 1}`}
             style={{
               width: '100%',
               height: '500px',
-              objectFit: 'cover',
+              objectFit: 'contain',
+              background: 'black',
+              borderRadius: 'var(--mg-radius-lg)',
+              border: '2px solid var(--mg-border)'
+            }}
+          />
+        ) : (
+          <video
+            src={currentMedia.url}
+            controls
+            style={{
+              width: '100%',
+              height: '500px',
+              objectFit: 'contain',
+              background: 'black',
               borderRadius: 'var(--mg-radius-lg)',
               border: '2px solid var(--mg-border)'
             }}
           />
         )}
-        
+
         {/* Botón de añadir más medios para dueño */}
         {isOwner() && (
           <button
@@ -207,54 +232,77 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
               zIndex: 10,
               transition: 'all 0.3s ease'
             }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.background = 'var(--mg-secondary)';
-              e.currentTarget.style.color = 'white';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.background = 'white';
-              e.currentTarget.style.color = 'var(--mg-secondary)';
-            }}
+            title="Añadir más fotos/videos"
           >
             +
           </button>
         )}
       </div>
 
-      {/* Miniaturas de imágenes */}
-      {images.length > 1 && (
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', 
-          gap: '1rem' 
+      {/* Miniaturas */}
+      {mediaItems.length > 1 && (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+          gap: '1rem'
         }}>
-          {images.map((image, index) => (
+          {mediaItems.map((item, index) => (
             <div
               key={index}
-              onClick={() => setSelectedImage(index)}
+              onClick={() => setSelectedIndex(index)}
               style={{
                 cursor: 'pointer',
                 borderRadius: 'var(--mg-radius-md)',
                 overflow: 'hidden',
-                border: selectedImage === index ? '3px solid var(--mg-secondary)' : '2px solid var(--mg-border)',
-                transition: 'all 0.2s'
+                border: selectedIndex === index ? '3px solid var(--mg-secondary)' : '2px solid var(--mg-border)',
+                transition: 'all 0.2s',
+                position: 'relative',
+                height: '80px',
+                background: 'black'
               }}
             >
-              <img
-                src={image}
-                alt={`Miniatura ${index + 1}`}
-                style={{
+              {item.type === 'image' ? (
+                <img
+                  src={item.url}
+                  alt={`Miniatura ${index + 1}`}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover'
+                  }}
+                />
+              ) : (
+                <div style={{
                   width: '100%',
-                  height: '80px',
-                  objectFit: 'cover'
-                }}
-              />
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  position: 'relative'
+                }}>
+                  <video
+                    src={item.url}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    preload="metadata" // Only load metadata for thumbnails
+                  />
+                  <div style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    fontSize: '1.5rem',
+                    textShadow: '0 0 5px rgba(0,0,0,0.5)'
+                  }}>
+                    ▶️
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>
       )}
 
-      {/* Modal para añadir medios */}
+      {/* Modal para añadir medios (Reutilizado del bloque if-empty) */}
       {showAddMedia && (
         <div style={{
           position: 'fixed',
@@ -272,7 +320,7 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
             <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem', color: 'var(--mg-text)' }}>
               Añadir Foto o Video
             </h3>
-            
+
             <div style={{
               border: '2px dashed var(--mg-border)',
               borderRadius: 'var(--mg-radius-md)',
@@ -290,17 +338,17 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                 accept="image/*,video/*"
                 onChange={handleFileUpload}
                 style={{ display: 'none' }}
-                id="media-upload-input-2"
+                id="media-upload-input-3"
               />
               <label
-                htmlFor="media-upload-input-2"
+                htmlFor="media-upload-input-3"
                 className="mg-btn mg-btn-primary"
                 style={{ borderRadius: '50px', cursor: 'pointer', margin: 0 }}
               >
                 Seleccionar Archivos
               </label>
             </div>
-            
+
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
               <button
                 onClick={() => setShowAddMedia(false)}

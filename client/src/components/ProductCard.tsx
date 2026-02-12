@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Livestock } from '../types/livestock';
 import { useNavigate } from 'react-router-dom';
 
@@ -8,10 +8,28 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ livestock }) => {
   const navigate = useNavigate();
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const handleClick = () => {
     navigate(`/product/${livestock.id}`);
   };
+
+  const handleMouseEnter = () => {
+    if (videoRef.current) {
+      videoRef.current.play().catch(error => {
+        // Autoplay might be blocked by browser policy if unmuted or other reasons
+        console.log('Video play failed:', error);
+      });
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0; // Reset to start
+    }
+  };
+
 
   const getPurposeLabel = (purpose: string) => {
     switch (purpose) {
@@ -31,15 +49,41 @@ const ProductCard: React.FC<ProductCardProps> = ({ livestock }) => {
     }
   };
 
+  const hasVideo = livestock.videos && livestock.videos.length > 0;
+  const hasImage = livestock.images && livestock.images.length > 0;
+
   return (
-    <div onClick={handleClick} className="mg-card mg-group">
-      {/* Product Image */}
-      <div className="mg-card-image-wrap">
-        <img
-          src={livestock.images[0]}
-          alt={livestock.name}
-          className="mg-card-image"
-        />
+    <div
+      onClick={handleClick}
+      className="mg-card mg-group"
+    >
+      {/* Product Media */}
+      <div
+        className="mg-card-image-wrap"
+        onMouseEnter={hasVideo ? handleMouseEnter : undefined}
+        onMouseLeave={hasVideo ? handleMouseLeave : undefined}
+      >
+        {hasVideo ? (
+          <video
+            ref={videoRef}
+            src={livestock.videos[0]}
+            poster={hasImage ? livestock.images[0] : undefined}
+            className="mg-card-image"
+            muted
+            loop
+            playsInline
+            style={{ objectFit: 'cover' }}
+          />
+        ) : (
+          <img
+            src={hasImage ? livestock.images[0] : '/placeholder-image.png'}
+            alt={livestock.name}
+            className="mg-card-image"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none'; // Hide if broken
+            }}
+          />
+        )}
         <div style={{ position: 'absolute', top: '1rem', left: '1rem', display: 'flex', gap: '0.5rem' }}>
           <div className="mg-badge mg-badge-glass">
             {getPurposeLabel(livestock.purpose)}
