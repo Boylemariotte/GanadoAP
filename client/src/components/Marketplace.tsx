@@ -4,13 +4,11 @@ import { Livestock } from '../types/livestock';
 import { getLivestock } from '../services/livestockService'; // Import modular service
 import ProductCard from './ProductCard';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import SaleForm from './SaleForm';
 import DropdownMenu from './DropdownMenu';
 
 const Marketplace: React.FC = () => {
-  const { user, logout, isOwner } = useAuth();
-  const navigate = useNavigate();
+  const { isOwner } = useAuth();
   const [livestock, setLivestock] = useState<Livestock[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
