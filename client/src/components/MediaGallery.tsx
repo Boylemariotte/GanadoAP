@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { updateLivestock } from '../services/livestockService';
 
 interface MediaGalleryProps {
   images: string[];
@@ -19,6 +20,7 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
   const { isOwner } = useAuth();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [showAddMedia, setShowAddMedia] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Combine images and videos into a single array with types
   const mediaItems = [
@@ -26,28 +28,36 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
     ...videos.map(url => ({ type: 'video', url }))
   ];
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
-    // This logic handles local preview updates. 
-    // In a real app, you might want to upload to server first or handle this differently.
-    const newImages = [...images];
-    const newVideos = [...videos];
-
+    setIsUploading(true);
+    const formData = new FormData();
     files.forEach(file => {
-      if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
-        const url = URL.createObjectURL(file);
-
-        if (file.type.startsWith('image/')) {
-          newImages.push(url);
-        } else {
-          newVideos.push(url);
-        }
-      }
+      formData.append('media', file);
     });
 
-    if (onMediaUpdate) onMediaUpdate(newImages, newVideos);
-    setShowAddMedia(false);
+    try {
+      const updatedProduct = await updateLivestock(productId, formData);
+
+      if (onMediaUpdate) {
+        onMediaUpdate(updatedProduct.images, updatedProduct.videos);
+      }
+
+      setShowAddMedia(false);
+      // Select the last added item
+      const totalItems = (updatedProduct.images.length + updatedProduct.videos.length);
+      if (totalItems > 0) {
+        setSelectedIndex(totalItems - 1);
+      }
+      alert('¡Medios subidos correctamente!');
+    } catch (error) {
+      console.error('Error uploading media:', error);
+      alert('Error al subir los archivos. Por favor intenta de nuevo.');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   // Si no hay medios, mostrar placeholder
@@ -127,7 +137,36 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
             justifyContent: 'center',
             zIndex: 1000
           }}>
-            <div className="mg-card" style={{ padding: '2rem', maxWidth: '400px', width: '90%' }}>
+            <div className="mg-card" style={{ padding: '2rem', maxWidth: '400px', width: '90%', position: 'relative', overflow: 'hidden' }}>
+              {/* Pantalla de carga superpuesta */}
+              {isUploading && (
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'rgba(255,255,255,0.9)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 20,
+                  gap: '1rem'
+                }}>
+                  <div className="mg-spinner" style={{
+                    width: '40px',
+                    height: '40px',
+                    border: '4px solid var(--mg-border)',
+                    borderTopColor: 'var(--mg-primary)',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }}></div>
+                  <style>{`
+                    @keyframes spin { to { transform: rotate(360deg); } }
+                  `}</style>
+                  <div style={{ fontWeight: 800, color: 'var(--mg-primary)' }}>Subiendo a Cloudinary...</div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--mg-text-muted)' }}>Esto puede tardar unos segundos</div>
+                </div>
+              )}
+
               <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem', color: 'var(--mg-text)' }}>
                 Añadir Foto o Video
               </h3>
@@ -150,13 +189,14 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                   onChange={handleFileUpload}
                   style={{ display: 'none' }}
                   id="media-upload-input"
+                  disabled={isUploading}
                 />
                 <label
                   htmlFor="media-upload-input"
                   className="mg-btn mg-btn-primary"
-                  style={{ borderRadius: '50px', cursor: 'pointer', margin: 0 }}
+                  style={{ borderRadius: '50px', cursor: isUploading ? 'not-allowed' : 'pointer', margin: 0, opacity: isUploading ? 0.7 : 1 }}
                 >
-                  Seleccionar Archivos
+                  {isUploading ? 'Subiendo...' : 'Seleccionar Archivos'}
                 </label>
               </div>
 
@@ -165,6 +205,7 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                   onClick={() => setShowAddMedia(false)}
                   className="mg-btn mg-btn-secondary"
                   style={{ borderRadius: '50px' }}
+                  disabled={isUploading}
                 >
                   Cancelar
                 </button>
@@ -316,7 +357,32 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
           justifyContent: 'center',
           zIndex: 1000
         }}>
-          <div className="mg-card" style={{ padding: '2rem', maxWidth: '400px', width: '90%' }}>
+          <div className="mg-card" style={{ padding: '2rem', maxWidth: '400px', width: '90%', position: 'relative', overflow: 'hidden' }}>
+            {/* Pantalla de carga superpuesta */}
+            {isUploading && (
+              <div style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'rgba(255,255,255,0.9)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 20,
+                gap: '1rem'
+              }}>
+                <div className="mg-spinner" style={{
+                  width: '40px',
+                  height: '40px',
+                  border: '4px solid var(--mg-border)',
+                  borderTopColor: 'var(--mg-primary)',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }}></div>
+                <div style={{ fontWeight: 800, color: 'var(--mg-primary)' }}>Subiendo a Cloudinary...</div>
+              </div>
+            )}
+
             <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem', color: 'var(--mg-text)' }}>
               Añadir Foto o Video
             </h3>
@@ -338,14 +404,15 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                 accept="image/*,video/*"
                 onChange={handleFileUpload}
                 style={{ display: 'none' }}
-                id="media-upload-input-3"
+                id="media-upload-input-gallery"
+                disabled={isUploading}
               />
               <label
-                htmlFor="media-upload-input-3"
+                htmlFor="media-upload-input-gallery"
                 className="mg-btn mg-btn-primary"
-                style={{ borderRadius: '50px', cursor: 'pointer', margin: 0 }}
+                style={{ borderRadius: '50px', cursor: isUploading ? 'not-allowed' : 'pointer', margin: 0, opacity: isUploading ? 0.7 : 1 }}
               >
-                Seleccionar Archivos
+                {isUploading ? 'Subiendo...' : 'Seleccionar Archivos'}
               </label>
             </div>
 
@@ -354,6 +421,7 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                 onClick={() => setShowAddMedia(false)}
                 className="mg-btn mg-btn-secondary"
                 style={{ borderRadius: '50px' }}
+                disabled={isUploading}
               >
                 Cancelar
               </button>

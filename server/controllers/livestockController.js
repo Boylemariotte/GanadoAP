@@ -92,13 +92,43 @@ const updateLivestock = async (req, res) => {
             return res.status(404).json({ message: 'Livestock not found' });
         }
 
+        const updateData = { ...req.body };
+
+        // Process uploaded files if any
+        if (req.files && req.files.length > 0) {
+            const newImages = [];
+            const newVideos = [];
+
+            req.files.forEach(file => {
+                if (file.mimetype.startsWith('image')) {
+                    newImages.push(file.path);
+                } else if (file.mimetype.startsWith('video')) {
+                    newVideos.push(file.path);
+                }
+            });
+
+            // If we have files, we append them to the existing lists
+            if (newImages.length > 0) {
+                updateData.images = [...(livestock.images || []), ...newImages];
+            }
+            if (newVideos.length > 0) {
+                updateData.videos = [...(livestock.videos || []), ...newVideos];
+            }
+        }
+
+        // Parse nested objects if they come as strings (Multipart data/FormData)
+        if (typeof updateData.seller === 'string') updateData.seller = JSON.parse(updateData.seller);
+        if (typeof updateData.offspring === 'string') updateData.offspring = JSON.parse(updateData.offspring);
+        if (typeof updateData.vaccinations === 'string') updateData.vaccinations = JSON.parse(updateData.vaccinations);
+
         const updatedLivestock = await Livestock.findByIdAndUpdate(
             req.params.id,
-            req.body,
+            updateData,
             { new: true }
         );
         res.status(200).json(updatedLivestock);
     } catch (error) {
+        console.error('Error updating livestock:', error);
         res.status(400).json({ message: error.message });
     }
 };

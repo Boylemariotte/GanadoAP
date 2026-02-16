@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 // import { mockLivestock } from '../data/mockData'; // Removed
-import { getLivestockById } from '../services/api'; // Import API service
+import { getLivestockById } from '../services/livestockService'; // Import modular service
 import { Livestock } from '../types/livestock';
 import MediaGallery from './MediaGallery';
 import DropdownMenu from './DropdownMenu';

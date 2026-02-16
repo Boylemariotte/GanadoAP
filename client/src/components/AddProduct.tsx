@@ -4,7 +4,7 @@ import { Livestock } from '../types/livestock';
 import { useAuth } from '../contexts/AuthContext';
 import MediaUpload from './MediaUpload';
 import DropdownMenu from './DropdownMenu';
-import { createLivestock } from '../services/api';
+import { createLivestock } from '../services/livestockService';
 
 const AddProduct: React.FC = () => {
   const navigate = useNavigate();

@@ -11,6 +11,9 @@ const {
 const { upload } = require('../config/cloudinary');
 
 router.route('/').get(getLivestock).post(upload.array('media', 10), createLivestock);
-router.route('/:id').get(getLivestockById).put(updateLivestock).delete(deleteLivestock);
+router.route('/:id')
+    .get(getLivestockById)
+    .put(upload.array('media', 10), updateLivestock)
+    .delete(deleteLivestock);
 
 module.exports = router;

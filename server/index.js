@@ -3,6 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const livestockRoutes = require('./routes/livestockRoutes');
+const cashRoutes = require('./routes/cashRoutes');
+const saleRoutes = require('./routes/saleRoutes');
 
 connectDB();
 
@@ -13,6 +15,8 @@ app.use(express.json());
 
 // Routes
 app.use('/api/livestock', livestockRoutes);
+app.use('/api/cash', cashRoutes);
+app.use('/api/sales', saleRoutes);
 
 // Base route
 app.get('/', (req, res) => {

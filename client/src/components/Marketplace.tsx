@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Livestock } from '../types/livestock';
 // import { mockLivestock } from '../data/mockData'; // Removed mock data
-import { getLivestock } from '../services/api'; // Import API service
+import { getLivestock } from '../services/livestockService'; // Import modular service
 import ProductCard from './ProductCard';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
