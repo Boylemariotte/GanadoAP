@@ -83,27 +83,7 @@ const ProductDetail: React.FC = () => {
     }
   };
 
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'cattle': return '🐄';
-      case 'goats': return '🐐';
-      case 'sheep': return '🐑';
-      case 'pigs': return '🐷';
-      case 'horses': return '🐴';
-      default: return '🐄';
-    }
-  };
 
-  const getCategoryLabel = (category: string) => {
-    switch (category) {
-      case 'cattle': return 'Ganado';
-      case 'goats': return 'Cabras';
-      case 'sheep': return 'Ovejas';
-      case 'pigs': return 'Cerdos';
-      case 'horses': return 'Caballos';
-      default: return 'Ganado';
-    }
-  };
 
   const getPurposeLabel = (purpose: string) => {
     switch (purpose) {

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Livestock } from '../types/livestock';
 import { useAuth } from '../contexts/AuthContext';
 import { createSale } from '../services/saleService';
@@ -13,7 +12,6 @@ interface SaleFormProps {
 
 const SaleForm: React.FC<SaleFormProps> = ({ livestock, onClose, onSaleComplete }) => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [saleData, setSaleData] = useState<Sale>({

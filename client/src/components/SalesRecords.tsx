@@ -17,7 +17,7 @@ import { Sale } from '../types/sale';
 // Sale interface is now imported from ../types/sale
 
 const SalesRecords: React.FC = () => {
-  const { user, isOwner } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [sales, setSales] = useState<Sale[]>([]);
   const [filteredSales, setFilteredSales] = useState<Sale[]>([]);
@@ -30,7 +30,7 @@ const SalesRecords: React.FC = () => {
   const [showCashModal, setShowCashModal] = useState<{ show: boolean, type: 'inicio' | 'gasto', item?: CashMovement }>({ show: false, type: 'inicio' });
   const [showDenomModal, setShowDenomModal] = useState<{ show: boolean, type: 'billete' | 'moneda', item?: CashMovement }>({ show: false, type: 'billete' });
   const [cashFormData, setCashFormData] = useState<Partial<CashMovement>>({ concept: '', amount: 0, totalBills: 0, totalCoins: 0 });
-  const [cashLoading, setCashLoading] = useState(true);
+  const [, setCashLoading] = useState(true);
 
   // Sale Detail Modal State
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -134,23 +134,7 @@ const SalesRecords: React.FC = () => {
     setFilteredSales(filtered);
   }, [sales, searchTerm, dateFilter, sortBy]);
 
-  const getPaymentMethodLabel = (method: string) => {
-    switch (method) {
-      case 'cash': return '💵 Efectivo';
-      case 'transfer': return '🏦 Transferencia';
-      case 'check': return '📄 Cheque';
-      case 'card': return '💳 Tarjeta';
-      default: return method;
-    }
-  };
 
-  const getDeliveryMethodLabel = (method: string) => {
-    switch (method) {
-      case 'pickup': return '🏪 Retiro en Tienda';
-      case 'delivery': return '🚚 Entrega a Domicilio';
-      default: return method;
-    }
-  };
 
   const getTotalSales = () => {
     return filteredSales.reduce((total, sale) => total + sale.salePrice, 0);
