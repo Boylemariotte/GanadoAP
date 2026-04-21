@@ -84,78 +84,81 @@ const ProductCard: React.FC<ProductCardProps> = ({ livestock }) => {
             }}
           />
         )}
-        <div style={{ position: 'absolute', top: '1rem', left: '1rem', display: 'flex', gap: '0.5rem' }}>
-          <div className="mg-badge mg-badge-glass">
-            {getPurposeLabel(livestock.purpose)}
+        <div style={{ position: 'absolute', top: '0.75rem', left: '0.75rem', display: 'flex', gap: '0.35rem', flexWrap: 'wrap', maxWidth: 'calc(100% - 4rem)' }}>
+          <div className="mg-badge mg-badge-glass" style={{ fontSize: '0.65rem', padding: '0.2rem 0.5rem' }}>
+            <span className="mg-mobile-hidden">{getPurposeLabel(livestock.purpose)}</span>
+            <span className="mg-desktop-hidden">{getPurposeLabel(livestock.purpose).split(' ')[0]}</span>
           </div>
           {livestock.isLot && (
-            <div className="mg-badge" style={{ background: 'var(--mg-secondary)', color: 'white', border: '1px solid var(--mg-secondary)' }}>
-              📦 LOTE
+            <div className="mg-badge" style={{ background: 'var(--mg-secondary)', color: 'white', border: '1px solid var(--mg-secondary)', fontSize: '0.65rem', padding: '0.2rem 0.5rem' }}>
+              LOTE
             </div>
           )}
         </div>
-        <div className={`mg-badge ${getHealthStatusColor(livestock.healthStatus)}`} style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
-          {livestock.healthStatus === 'excellent' ? 'Excelente' :
-            livestock.healthStatus === 'good' ? 'Bueno' : 'Regular'}
+        <div className={`mg-badge ${getHealthStatusColor(livestock.healthStatus)}`} style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', fontSize: '0.65rem', padding: '0.2rem 0.5rem' }}>
+          <span className="mg-mobile-hidden">{livestock.healthStatus === 'excellent' ? 'Excelente' :
+            livestock.healthStatus === 'good' ? 'Bueno' : 'Regular'}</span>
+          <span className="mg-desktop-hidden">{livestock.healthStatus === 'excellent' ? 'Excel' :
+            livestock.healthStatus === 'good' ? 'Bueno' : 'Reg'}</span>
         </div>
       </div>
 
       {/* Product Info */}
       <div className="mg-card-content">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1e293b' }}>{livestock.name}</h3>
-          <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', background: '#f1f5f9', padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1e293b', flex: 1, minWidth: '120px' }}>{livestock.name}</h3>
+          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', background: '#f1f5f9', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
             {livestock.breed}
           </span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
           <div>
-            <div className="mg-price-tag" style={{ color: livestock.isLot ? 'var(--mg-secondary)' : 'var(--mg-primary)' }}>
-              <span style={{ fontSize: '1rem', alignSelf: 'flex-start', marginTop: '0.3rem', marginRight: '0.1rem' }}>$</span>
+            <div className="mg-price-tag" style={{ color: livestock.isLot ? 'var(--mg-secondary)' : 'var(--mg-primary)', fontSize: '1.4rem' }}>
+              <span style={{ fontSize: '0.9rem', alignSelf: 'flex-start', marginTop: '0.2rem', marginRight: '0.1rem' }}>$</span>
               {livestock.price.toLocaleString('es-AR')}
             </div>
             {livestock.isLot && (
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', marginTop: '0.2rem' }}>
+              <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b', marginTop: '0.1rem' }}>
                 ${(livestock.price / livestock.lotSize).toLocaleString('es-AR')} c/u
               </div>
             )}
           </div>
-          <div style={{ display: 'flex', gap: '0.4rem', flexDirection: 'column', alignItems: 'flex-end' }}>
-            <div style={{ display: 'flex', gap: '0.4rem' }}>
+          <div style={{ display: 'flex', gap: '0.3rem', flexDirection: 'column', alignItems: 'flex-end' }}>
+            <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
               {livestock.milkYield && (
-                <span className="mg-badge" style={{ fontSize: '0.75rem', background: 'var(--mg-accent)', color: 'var(--mg-primary)' }}>{livestock.milkYield}L/día</span>
+                <span className="mg-badge" style={{ fontSize: '0.65rem', background: 'var(--mg-accent)', color: 'var(--mg-primary)', padding: '0.15rem 0.4rem' }}>{livestock.milkYield}L/d</span>
               )}
-              <span className="mg-badge" style={{ fontSize: '0.75rem', background: '#fef3c7', color: '#92400e' }}>{livestock.births} partos</span>
+              <span className="mg-badge" style={{ fontSize: '0.65rem', background: '#fef3c7', color: '#92400e', padding: '0.15rem 0.4rem' }}>{livestock.births} p</span>
             </div>
             {livestock.isLot && (
-              <span className="mg-badge" style={{ fontSize: '0.75rem', background: 'var(--mg-accent)', color: 'var(--mg-secondary)', fontWeight: 800 }}>
-                x{livestock.lotSize} Animales
+              <span className="mg-badge" style={{ fontSize: '0.65rem', background: 'var(--mg-accent)', color: 'var(--mg-secondary)', fontWeight: 800, padding: '0.15rem 0.4rem' }}>
+                x{livestock.lotSize}
               </span>
             )}
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.25rem' }}>
-          <div style={{ fontSize: '0.85rem', color: '#64748b' }}>
-            <strong>Peso Prom:</strong> {livestock.weight}kg
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '1rem' }}>
+          <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
+            <strong>Peso:</strong> {livestock.weight}kg
           </div>
-          <div style={{ fontSize: '0.85rem', color: '#64748b' }}>
-            <strong>Prom. Edad:</strong> {livestock.age} años
+          <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
+            <strong>Edad:</strong> {livestock.age}a
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', color: '#64748b', fontSize: '0.85rem', marginBottom: '1.25rem', fontWeight: 500 }}>
-          <span style={{ marginRight: '0.5rem' }}>📍</span>
-          {livestock.location}
+        <div style={{ display: 'flex', alignItems: 'center', color: '#64748b', fontSize: '0.8rem', marginBottom: '1rem', fontWeight: 500 }}>
+          <span style={{ marginRight: '0.3rem' }}>???</span>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{livestock.location}</span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '1.25rem', borderTop: '1px solid #f1f5f9' }}>
-          <div style={{ display: 'flex', alignItems: 'center', background: '#fffbeb', padding: '0.25rem 0.75rem', borderRadius: '50px', border: '1px solid #fef3c7' }}>
-            <span style={{ marginRight: '0.35rem' }}>⭐</span>
-            <span style={{ fontWeight: 800, color: '#92400e', fontSize: '0.85rem' }}>{livestock.seller.rating}</span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '1rem', borderTop: '1px solid #f1f5f9', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', background: '#fffbeb', padding: '0.2rem 0.6rem', borderRadius: '50px', border: '1px solid #fef3c7' }}>
+            <span style={{ marginRight: '0.25rem' }}>??? </span>
+            <span style={{ fontWeight: 800, color: '#92400e', fontSize: '0.8rem' }}>{livestock.seller.rating}</span>
           </div>
-          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#94a3b8' }}>{livestock.seller.name}</span>
+          <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '150px' }}>{livestock.seller.name}</span>
         </div>
       </div>
     </div>

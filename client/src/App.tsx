@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Marketplace from './components/Marketplace';
 import ProductDetail from './components/ProductDetail';
+import EstateDetail from './components/EstateDetail';
+import AdminPanel from './components/AdminPanel';
 import Login from './components/Login';
 import AddProduct from './components/AddProduct';
 import SalesRecords from './components/SalesRecords';
@@ -19,6 +21,8 @@ const AppRoutes: React.FC = () => {
     <Routes>
       <Route path="/" element={<Marketplace />} />
       <Route path="/product/:id" element={<ProductDetail />} />
+      <Route path="/estate/:id" element={<EstateDetail />} />
+      <Route path="/admin" element={<AdminPanel />} />
       <Route path="/add-product" element={<AddProduct />} />
       <Route path="/sales-records" element={<SalesRecords />} />
     </Routes>

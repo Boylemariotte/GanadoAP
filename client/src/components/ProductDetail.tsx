@@ -1,14 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-// import { mockLivestock } from '../data/mockData'; // Removed
-import { getLivestockById } from '../services/livestockService'; // Import modular service
+import { mockLivestock } from '../data/mockData'; // Import mock data
+// import { getLivestockById } from '../services/livestockService'; // Commented for now
 import { Livestock } from '../types/livestock';
-import MediaGallery from './MediaGallery';
+import MediaGalleryML from './MediaGalleryML';
+import NavBarLinks from './NavBarLinks';
 import DropdownMenu from './DropdownMenu';
+import SearchBar from './SearchBar';
+import { useAuth } from '../contexts/AuthContext';
+import { 
+  Milk, 
+  Beef, 
+  Scale, 
+  Heart, 
+  MapPin, 
+  Star,
+  Package,
+  Syringe,
+  Phone,
+  Share2,
+  MessageCircle,
+  Edit
+} from 'lucide-react';
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { isOwner } = useAuth();
   const [showTooltip, setShowTooltip] = useState(false);
   const [productImages, setProductImages] = useState<string[]>([]);
   const [productVideos, setProductVideos] = useState<string[]>([]);
@@ -17,26 +35,42 @@ const ProductDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProduct = async () => {
-      if (!id) return;
-      try {
-        const data = await getLivestockById(id);
-        setLivestock(data);
-      } catch (error) {
-        console.error('Error fetching product:', error);
-        // navigate('/'); // Optional: redirect on error
-      } finally {
-        setLoading(false);
-      }
-    };
+    // Use mock data for now
+    if (!id) return;
+    
+    console.log('Cargando producto con ID:', id);
+    const product = mockLivestock.find(item => item.id === id);
+    console.log('Producto encontrado:', product);
+    console.log('Imágenes del producto:', product?.images);
+    setLivestock(product || null);
+    setLoading(false);
+    
+    // Uncomment below when API is ready
+    // const fetchProduct = async () => {
+    //   if (!id) return;
+    //   try {
+    //     const data = await getLivestockById(id);
+    //     setLivestock(data);
+    //   } catch (error) {
+    //     console.error('Error fetching product:', error);
+    //     // navigate('/'); // Optional: redirect on error
+    //   } finally {
+    //     setLoading(false);
+    //   }
+    // };
 
-    fetchProduct();
+    // fetchProduct();
   }, [id]); // Removed navigate dependency to avoid loops
 
   useEffect(() => {
     if (livestock) {
+      console.log('Actualizando imágenes del producto...');
+      console.log('Imágenes en livestock:', livestock.images);
+      console.log('Videos en livestock:', livestock.videos);
       setProductImages(livestock.images || []);
       setProductVideos(livestock.videos || []);
+      console.log('productImages actualizado:', livestock.images || []);
+      console.log('productVideos actualizado:', livestock.videos || []);
     }
   }, [livestock]);
 
@@ -87,10 +121,10 @@ const ProductDetail: React.FC = () => {
 
   const getPurposeLabel = (purpose: string) => {
     switch (purpose) {
-      case 'leche': return '🥛 Producción Lechera';
-      case 'carne': return '🥩 Producción Cárnica';
-      case 'doble_proposito': return '⚖️ Doble Propósito';
-      default: return '🐄 Ganado Vacuno';
+      case 'leche': return <><Milk size={16} style={{ marginRight: '4px' }} />Producción Lechera</>;
+      case 'carne': return <><Beef size={16} style={{ marginRight: '4px' }} />Producción Cárnica</>;
+      case 'doble_proposito': return <><Scale size={16} style={{ marginRight: '4px' }} />Doble Propósito</>;
+      default: return <><Package size={16} style={{ marginRight: '4px' }} />Ganado Vacuno</>;
     }
   };
 
@@ -113,42 +147,120 @@ const ProductDetail: React.FC = () => {
   };
 
   return (
-    <div className="mg-app">
-      {/* Header */}
-      <header className="mg-header">
-        <div className="mg-container">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-              <DropdownMenu />
+    <div style={{ backgroundColor: '#F4F1EC', minHeight: '100vh' }}>
+      {/* Header - MercadoLibre Style */}
+      <header style={{ 
+        backgroundColor: '#2E5E3E', 
+        borderBottom: '1px solid #1a3a2a',
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+      }}>
+        <div style={{ 
+          maxWidth: '1200px', 
+          margin: '0 auto', 
+          padding: '0 24px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '20px',
+          height: '72px'
+        }}>
+          {/* Logo y Búsqueda - Izquierda */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+            {/* Logo */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+              <img
+                src="/logo.png"
+                alt="GANADERIA AP"
+                style={{ 
+                  height: '44px', 
+                  width: '44px', 
+                  borderRadius: '50%',
+                  backgroundColor: 'white',
+                  border: '2px solid #fff',
+                  objectFit: 'cover',
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s ease'
+                }}
+                onClick={() => navigate('/')}
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              />
+              <div className="mg-desktop-hidden">
+                <h1 style={{ 
+                  fontSize: '1.5rem', 
+                  fontWeight: '700', 
+                  color: '#FFFFFF',
+                  margin: 0
+                }}>
+                  GANADERIA AP
+                </h1>
+              </div>
             </div>
+
+            {/* Search Bar */}
+            <div style={{ flex: 1, maxWidth: '450px', minWidth: '180px' }}>
+              <SearchBar 
+                onSearch={(query) => {
+                  // Redirigir al marketplace con la búsqueda
+                  navigate(`/?search=${encodeURIComponent(query)}`);
+                }}
+                placeholder="Buscar ganado por raza, ubicación..."
+              />
+            </div>
+          </div>
+
+          {/* Navigation Links - Centro */}
+          <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+            <NavBarLinks />
+          </div>
+
+          {/* Right Section - Derecha */}
+          <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+            <DropdownMenu />
           </div>
         </div>
       </header>
 
       {/* Product Detail Content */}
-      <main className="mg-container mg-section">
-        <div className="mg-detail-grid">
+      <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px 16px' }}>
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: '1fr 1fr', 
+          gap: '32px',
+          marginBottom: '32px'
+        }} className="mg-detail-grid">
           {/* Gallery Column */}
           <div className="mg-gallery-section">
-            <MediaGallery
+            <MediaGalleryML
               images={productImages}
               videos={productVideos}
               productName={livestock.name}
               productId={livestock.id}
-              onMediaUpdate={(newImages, newVideos) => {
-                setProductImages(newImages);
-                setProductVideos(newVideos);
-                // Aquí podrías actualizar el producto en la base de datos
-                console.log('Media updated:', { newImages, newVideos });
-              }}
             />
+            {/* Debug info */}
+            <div style={{ marginTop: '10px', fontSize: '0.75rem', color: '#666', background: '#f0f0f0', padding: '8px', borderRadius: '4px' }}>
+              Debug: productImages.length = {productImages.length}, productVideos.length = {productVideos.length}
+            </div>
 
             <div className="mg-card" style={{ marginTop: '2rem', padding: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem' }}>📋 Ficha Técnica</h3>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem' }}><Package size={20} style={{ marginRight: '8px' }} />Ficha Técnica</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
                 <div style={{ padding: '1rem', background: '#f8fafc', borderRadius: '12px' }}>
                   <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Raza</div>
                   <div style={{ fontWeight: 800, color: '#1e293b' }}>{livestock.breed}</div>
+                </div>
+                <div style={{ padding: '1rem', background: '#f8fafc', borderRadius: '12px' }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Tipo</div>
+                  <div style={{ fontWeight: 800, color: '#1e293b' }}>{livestock.births > 0 ? 'Vaca' : 'Novilla'}</div>
                 </div>
                 <div style={{ padding: '1rem', background: '#f8fafc', borderRadius: '12px' }}>
                   <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Partos</div>
@@ -167,15 +279,17 @@ const ProductDetail: React.FC = () => {
                   <div style={{ fontWeight: 800, color: '#1e293b' }}>{livestock.gestationTime > 0 ? `${livestock.gestationTime} Meses` : 'No está gestando'}</div>
                 </div>
                 <div style={{ padding: '1rem', background: '#f8fafc', borderRadius: '12px' }}>
-                  <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Última Cría</div>
-                  <div style={{ fontWeight: 800, color: '#1e293b' }}>{livestock.offspring.quantity > 0 ? `${livestock.offspring.sex === 'hembra' ? '♀️ Hembra' : '♂️ Macho'}` : 'Sin cría'}</div>
-                </div>
-                {livestock.isLot && (
-                  <div style={{ padding: '1rem', background: 'var(--mg-accent)', borderRadius: '12px', border: '2px solid var(--mg-secondary)', gridColumn: '1 / -1' }}>
-                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--mg-secondary)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Animales en Lote</div>
-                    <div style={{ fontWeight: 800, color: 'var(--mg-primary)', fontSize: '1.25rem' }}>{livestock.lotSize} vacas</div>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Cría Actual</div>
+                  <div style={{ fontWeight: 800, color: '#1e293b' }}>
+                    {livestock.offspring.quantity > 0 
+                      ? `Sí - ${livestock.offspring.sex === 'hembra' ? 'Hembra' : 'Macho'}` 
+                      : 'No viene con cría'}
                   </div>
-                )}
+                </div>
+                <div style={{ padding: '1rem', background: '#f8fafc', borderRadius: '12px' }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Vacunación</div>
+                  <div style={{ fontWeight: 800, color: '#1e293b' }}>Sí, al día</div>
+                </div>
               </div>
             </div>
           </div>
@@ -189,7 +303,7 @@ const ProductDetail: React.FC = () => {
                 </span>
                 {livestock.isLot && (
                   <span className="mg-badge" style={{ background: 'var(--mg-secondary)', color: 'white', border: '1px solid var(--mg-secondary)' }}>
-                    📦 Venta por Lote
+                    <Package size={14} style={{ marginRight: '4px' }} />Venta por Lote
                   </span>
                 )}
                 <span className="mg-badge mg-badge-glass">ID: {livestock.id}</span>
@@ -229,26 +343,11 @@ const ProductDetail: React.FC = () => {
               <p style={{ color: '#475569', fontSize: '1.1rem', lineHeight: '1.8' }}>{livestock.description}</p>
             </div>
 
-            {/* Vaccinations */}
-            <div style={{ marginBottom: '2.5rem' }}>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1rem' }}>Plan de Vacunación</h3>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
-                {livestock.vaccinations.map((vaccine, index) => (
-                  <span
-                    key={index}
-                    className="mg-badge"
-                    style={{ background: '#e0f2fe', color: '#0369a1', border: '1px solid #bae6fd' }}
-                  >
-                    💉 {vaccine}
-                  </span>
-                ))}
-              </div>
-            </div>
-
+            
             {/* Location */}
             <div style={{ marginBottom: '2.5rem' }}>
               <div className="mg-badge mg-badge-glass" style={{ padding: '0.75rem 1.25rem', fontSize: '0.9rem' }}>
-                📍 {livestock.location}
+                <MapPin size={16} style={{ marginRight: '4px' }} />{livestock.location}
               </div>
             </div>
 
@@ -257,7 +356,7 @@ const ProductDetail: React.FC = () => {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
                 <div>
                   <h4 style={{ fontWeight: 800, fontSize: '1.1rem' }}>{livestock.seller.name}</h4>
-                  <div style={{ color: '#92400e', fontWeight: 700, fontSize: '0.9rem' }}>⭐ {livestock.seller.rating} calificación</div>
+                  <div style={{ color: '#92400e', fontWeight: 700, fontSize: '0.9rem' }}><Star size={14} style={{ marginRight: '4px' }} />{livestock.seller.rating} calificación</div>
                 </div>
                 <div className="mg-badge mg-badge-success">{livestock.available ? 'Disponible' : 'Vendido'}</div>
               </div>
@@ -267,8 +366,24 @@ const ProductDetail: React.FC = () => {
                   Contactar por WhatsApp
                 </button>
                 <button className="mg-btn mg-btn-secondary" style={{ padding: '1rem' }}>
-                  ❤️ Guardar
+                  <Heart size={16} style={{ marginRight: '4px' }} />Guardar
                 </button>
+                {isOwner() && (
+                  <button 
+                    onClick={() => navigate('/admin')}
+                    className="mg-btn" 
+                    style={{ 
+                      padding: '1rem',
+                      backgroundColor: '#2E5E3E',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <Edit size={16} style={{ marginRight: '4px' }} />Editar
+                  </button>
+                )}
               </div>
             </div>
 
