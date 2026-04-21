@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { mockLivestock } from '../data/mockData'; // Import mock data
-// import { getLivestockById } from '../services/livestockService'; // Commented for now
+import { getLivestockById } from '../services/livestockService';
 import { Livestock } from '../types/livestock';
-import MediaGalleryML from './MediaGalleryML';
+import MediaGallery from './MediaGallery';
 import NavBarLinks from './NavBarLinks';
 import DropdownMenu from './DropdownMenu';
 import SearchBar from './SearchBar';
 import { useAuth } from '../contexts/AuthContext';
-import { 
-  Milk, 
-  Beef, 
-  Scale, 
-  Heart, 
-  MapPin, 
+import {
+  Milk,
+  Beef,
+  Scale,
+  Heart,
+  MapPin,
   Star,
   Package,
   Syringe,
@@ -35,32 +34,21 @@ const ProductDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Use mock data for now
-    if (!id) return;
-    
-    console.log('Cargando producto con ID:', id);
-    const product = mockLivestock.find(item => item.id === id);
-    console.log('Producto encontrado:', product);
-    console.log('Imágenes del producto:', product?.images);
-    setLivestock(product || null);
-    setLoading(false);
-    
-    // Uncomment below when API is ready
-    // const fetchProduct = async () => {
-    //   if (!id) return;
-    //   try {
-    //     const data = await getLivestockById(id);
-    //     setLivestock(data);
-    //   } catch (error) {
-    //     console.error('Error fetching product:', error);
-    //     // navigate('/'); // Optional: redirect on error
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // };
+    const fetchProduct = async () => {
+      if (!id) return;
+      try {
+        setLoading(true);
+        const data = await getLivestockById(id);
+        setLivestock(data);
+      } catch (error) {
+        console.error('Error fetching product:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    // fetchProduct();
-  }, [id]); // Removed navigate dependency to avoid loops
+    fetchProduct();
+  }, [id]);
 
   useEffect(() => {
     if (livestock) {
@@ -149,17 +137,17 @@ const ProductDetail: React.FC = () => {
   return (
     <div style={{ backgroundColor: '#F4F1EC', minHeight: '100vh' }}>
       {/* Header - MercadoLibre Style */}
-      <header style={{ 
-        backgroundColor: '#2E5E3E', 
+      <header style={{
+        backgroundColor: '#2E5E3E',
         borderBottom: '1px solid #1a3a2a',
         position: 'sticky',
         top: 0,
         zIndex: 100,
         boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
       }}>
-        <div style={{ 
-          maxWidth: '1200px', 
-          margin: '0 auto', 
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
           padding: '0 24px',
           display: 'flex',
           alignItems: 'center',
@@ -173,9 +161,9 @@ const ProductDetail: React.FC = () => {
               <img
                 src="/logo.png"
                 alt="GANADERIA AP"
-                style={{ 
-                  height: '44px', 
-                  width: '44px', 
+                style={{
+                  height: '44px',
+                  width: '44px',
                   borderRadius: '50%',
                   backgroundColor: 'white',
                   border: '2px solid #fff',
@@ -195,9 +183,9 @@ const ProductDetail: React.FC = () => {
                 }}
               />
               <div className="mg-desktop-hidden">
-                <h1 style={{ 
-                  fontSize: '1.5rem', 
-                  fontWeight: '700', 
+                <h1 style={{
+                  fontSize: '1.5rem',
+                  fontWeight: '700',
                   color: '#FFFFFF',
                   margin: 0
                 }}>
@@ -208,7 +196,7 @@ const ProductDetail: React.FC = () => {
 
             {/* Search Bar */}
             <div style={{ flex: 1, maxWidth: '450px', minWidth: '180px' }}>
-              <SearchBar 
+              <SearchBar
                 onSearch={(query) => {
                   // Redirigir al marketplace con la búsqueda
                   navigate(`/?search=${encodeURIComponent(query)}`);
@@ -232,19 +220,23 @@ const ProductDetail: React.FC = () => {
 
       {/* Product Detail Content */}
       <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px 16px' }}>
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: '1fr 1fr', 
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
           gap: '32px',
           marginBottom: '32px'
         }} className="mg-detail-grid">
           {/* Gallery Column */}
           <div className="mg-gallery-section">
-            <MediaGalleryML
+            <MediaGallery
               images={productImages}
               videos={productVideos}
               productName={livestock.name}
               productId={livestock.id}
+              onMediaUpdate={(newImages, newVideos) => {
+                setProductImages(newImages);
+                setProductVideos(newVideos);
+              }}
             />
             {/* Debug info */}
             <div style={{ marginTop: '10px', fontSize: '0.75rem', color: '#666', background: '#f0f0f0', padding: '8px', borderRadius: '4px' }}>
@@ -281,8 +273,8 @@ const ProductDetail: React.FC = () => {
                 <div style={{ padding: '1rem', background: '#f8fafc', borderRadius: '12px' }}>
                   <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Cría Actual</div>
                   <div style={{ fontWeight: 800, color: '#1e293b' }}>
-                    {livestock.offspring.quantity > 0 
-                      ? `Sí - ${livestock.offspring.sex === 'hembra' ? 'Hembra' : 'Macho'}` 
+                    {livestock.offspring.quantity > 0
+                      ? `Sí - ${livestock.offspring.sex === 'hembra' ? 'Hembra' : 'Macho'}`
                       : 'No viene con cría'}
                   </div>
                 </div>
@@ -343,7 +335,7 @@ const ProductDetail: React.FC = () => {
               <p style={{ color: '#475569', fontSize: '1.1rem', lineHeight: '1.8' }}>{livestock.description}</p>
             </div>
 
-            
+
             {/* Location */}
             <div style={{ marginBottom: '2.5rem' }}>
               <div className="mg-badge mg-badge-glass" style={{ padding: '0.75rem 1.25rem', fontSize: '0.9rem' }}>
@@ -369,10 +361,10 @@ const ProductDetail: React.FC = () => {
                   <Heart size={16} style={{ marginRight: '4px' }} />Guardar
                 </button>
                 {isOwner() && (
-                  <button 
+                  <button
                     onClick={() => navigate('/admin')}
-                    className="mg-btn" 
-                    style={{ 
+                    className="mg-btn"
+                    style={{
                       padding: '1rem',
                       backgroundColor: '#2E5E3E',
                       color: 'white',

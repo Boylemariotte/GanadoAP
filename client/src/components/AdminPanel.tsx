@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Livestock } from '../types/livestock';
 import { Estate } from '../types/estate';
 import { mockLivestock, allEstates } from '../data/mockData';
+import { getLivestock, updateLivestock, deleteLivestock } from '../services/livestockService';
 import { 
   Settings, 
   Plus, 
@@ -38,8 +39,16 @@ const AdminPanel: React.FC = () => {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   useEffect(() => {
-    setLivestock(mockLivestock);
-    setEstates(allEstates);
+    const fetchData = async () => {
+      try {
+        const livestockData = await getLivestock();
+        setLivestock(livestockData);
+        setEstates(allEstates);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+    fetchData();
   }, []);
 
   const handleEdit = (item: AdminProduct) => {
@@ -48,85 +57,59 @@ const AdminPanel: React.FC = () => {
     setIsEditing(true);
   };
 
-  const handleDelete = (id: string, type: 'livestock' | 'estate') => {
+  const handleDelete = async (id: string, type: 'livestock' | 'estate') => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
-      if (type === 'livestock') {
-        setLivestock(livestock.filter(item => item.id !== id));
-        // Update mockData to persist deletion
-        const index = mockLivestock.findIndex(item => item.id === id);
-        if (index !== -1) {
-          mockLivestock.splice(index, 1);
-          console.log('Producto eliminado de mockData');
+      try {
+        if (type === 'livestock') {
+          await deleteLivestock(id);
+          setLivestock(livestock.filter(item => item.id !== id));
+        } else {
+          // Fallback for estates until service is ready
+          setEstates(estates.filter(item => item.id !== id));
         }
-      } else {
-        setEstates(estates.filter(item => item.id !== id));
-        // Update mockData to persist deletion
-        const index = allEstates.findIndex(item => item.id === id);
-        if (index !== -1) {
-          allEstates.splice(index, 1);
-          console.log('Finca eliminada de mockData');
-        }
+        setShowSuccessMessage(true);
+        setTimeout(() => setShowSuccessMessage(false), 3000);
+      } catch (error) {
+        console.error('Error deleting item:', error);
+        alert('Error al eliminar el item');
       }
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!editingData || !selectedItem) return;
 
-    console.log('Guardando cambios...');
-    console.log('editingData:', editingData);
-    console.log('selectedItem:', selectedItem);
-    console.log('newImages:', newImages);
-
-    // Add new images to the existing images
-    const updatedData = { ...editingData };
-    if ('images' in updatedData && newImages.length > 0) {
-      console.log('Agregando nuevas imágenes a las existentes');
-      console.log('Imágenes existentes:', updatedData.images);
-      console.log('Nuevas imágenes:', newImages);
-      updatedData.images = [...updatedData.images, ...newImages];
-      console.log('Imágenes finales:', updatedData.images);
-    }
-
-    if (selectedItem.type === 'livestock') {
-      console.log('Actualizando ganado');
-      const updatedLivestock = livestock.map(item => 
-        item.id === selectedItem.id ? updatedData as Livestock : item
-      );
-      console.log('Ganado actualizado:', updatedLivestock);
-      setLivestock(updatedLivestock);
+    try {
+      let savedData: Livestock | Estate;
       
-      // Update mockData to persist changes
-      const index = mockLivestock.findIndex(item => item.id === selectedItem.id);
-      if (index !== -1) {
-        mockLivestock[index] = updatedData as Livestock;
-        console.log('MockData actualizado');
+      if (selectedItem.type === 'livestock') {
+        const livestockData = editingData as Livestock;
+        // In case there are newImages from the base64 preview (simplified here)
+        // For real implementation, we should use FormData if images are base64
+        savedData = await updateLivestock(selectedItem.id, livestockData);
+        
+        setLivestock(livestock.map(item => 
+          item.id === selectedItem.id ? savedData as Livestock : item
+        ));
+      } else {
+        // Fallback for estates
+        savedData = editingData as Estate;
+        setEstates(estates.map(item => 
+          item.id === selectedItem.id ? savedData as Estate : item
+        ));
       }
-    } else {
-      console.log('Actualizando fincas');
-      const updatedEstates = estates.map(item => 
-        item.id === selectedItem.id ? updatedData as Estate : item
-      );
-      console.log('Fincas actualizadas:', updatedEstates);
-      setEstates(updatedEstates);
-      
-      // Update mockData to persist changes
-      const index = allEstates.findIndex(item => item.id === selectedItem.id);
-      if (index !== -1) {
-        allEstates[index] = updatedData as Estate;
-        console.log('MockData actualizado');
-      }
-    }
 
-    console.log('Cerrando modo edición');
-    setIsEditing(false);
-    setSelectedItem(null);
-    setEditingData(null);
-    setNewImages([]);
-    
-    // Show success message
-    setShowSuccessMessage(true);
-    setTimeout(() => setShowSuccessMessage(false), 3000);
+      setIsEditing(false);
+      setSelectedItem(null);
+      setEditingData(null);
+      setNewImages([]);
+      
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 3000);
+    } catch (error) {
+      console.error('Error saving changes:', error);
+      alert('Error al guardar los cambios');
+    }
   };
 
   const handleCancel = () => {

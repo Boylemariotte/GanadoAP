@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Livestock } from '../types/livestock';
 import { Estate } from '../types/estate';
-import { mockLivestock, allEstates, categories } from '../data/mockData'; // Import mock data
-// import { getLivestock } from '../services/livestockService'; // Commented for now
+import { allEstates, categories } from '../data/mockData'; // Import mock data
+import { getLivestock, deleteLivestock } from '../services/livestockService';
 import ProductCardML from './ProductCardML';
 import EstateCard from './EstateCard';
 import SearchBar from './SearchBar';
@@ -26,24 +26,21 @@ const Marketplace: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'ganado' | 'fincas'>('ganado');
 
   useEffect(() => {
-    // Use mock data for now
-    setLivestock(mockLivestock);
-    setEstates(allEstates);
-    setLoading(false);
-    
-    // Uncomment below when API is ready
-    // const fetchLivestock = async () => {
-    //   try {
-    //     const data = await getLivestock();
-    //     setLivestock(data);
-    //   } catch (error) {
-    //     setError('Error al cargar el ganado');
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // };
+    const fetchLivestock = async () => {
+      try {
+        setLoading(true);
+        const data = await getLivestock();
+        setLivestock(data);
+      } catch (error) {
+        console.error('Error fetching livestock:', error);
+        setError('Error al cargar el ganado');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    // fetchLivestock();
+    setEstates(allEstates);
+    fetchLivestock();
   }, []);
 
   const sortOptions = [
@@ -56,7 +53,7 @@ const Marketplace: React.FC = () => {
   const filteredAndSortedLivestock = livestock
     .filter(item => {
       const matchesCategory = selectedPurpose === 'all' || item.purpose === selectedPurpose;
-      const matchesSearch = searchQuery === '' || 
+      const matchesSearch = searchQuery === '' ||
         item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.breed.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -73,6 +70,18 @@ const Marketplace: React.FC = () => {
       }
     });
 
+  const handleDelete = async (id: string) => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar este ejemplar?')) {
+      try {
+        await deleteLivestock(id);
+        setLivestock(livestock.filter(item => item.id !== id));
+      } catch (error) {
+        console.error('Error deleting livestock:', error);
+        setError('Error al eliminar el ejemplar');
+      }
+    }
+  };
+
   const handleSaleComplete = (saleData: any) => {
     console.log('Venta registrada:', saleData);
     // Aquí podrías mostrar una notificación o actualizar la lista
@@ -81,17 +90,17 @@ const Marketplace: React.FC = () => {
   return (
     <div style={{ backgroundColor: '#F4F1EC', minHeight: '100vh' }}>
       {/* Header - MercadoLibre Style */}
-      <header style={{ 
-        backgroundColor: '#2E5E3E', 
+      <header style={{
+        backgroundColor: '#2E5E3E',
         borderBottom: '1px solid #1a3a2a',
         position: 'sticky',
         top: 0,
         zIndex: 100,
         boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
       }}>
-        <div style={{ 
-          maxWidth: '1200px', 
-          margin: '0 auto', 
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
           padding: '0 24px',
           display: 'flex',
           alignItems: 'center',
@@ -105,9 +114,9 @@ const Marketplace: React.FC = () => {
               <img
                 src="/logo.png"
                 alt="GANADERIA AP"
-                style={{ 
-                  height: '44px', 
-                  width: '44px', 
+                style={{
+                  height: '44px',
+                  width: '44px',
                   borderRadius: '50%',
                   backgroundColor: 'white',
                   border: '2px solid #fff',
@@ -127,9 +136,9 @@ const Marketplace: React.FC = () => {
                 }}
               />
               <div className="mg-desktop-hidden">
-                <h1 style={{ 
-                  fontSize: '1.5rem', 
-                  fontWeight: '700', 
+                <h1 style={{
+                  fontSize: '1.5rem',
+                  fontWeight: '700',
                   color: '#FFFFFF',
                   margin: 0
                 }}>
@@ -140,7 +149,7 @@ const Marketplace: React.FC = () => {
 
             {/* Search Bar */}
             <div style={{ flex: 1, maxWidth: '450px', minWidth: '180px' }}>
-              <SearchBar 
+              <SearchBar
                 onSearch={setSearchQuery}
                 placeholder="Buscar ganado por raza, ubicación..."
               />
@@ -164,8 +173,8 @@ const Marketplace: React.FC = () => {
         {/* Filters and Results */}
         <div style={{ display: 'flex', gap: '20px', marginBottom: '24px' }}>
           {/* Sidebar Filters */}
-          <aside style={{ 
-            width: '240px', 
+          <aside style={{
+            width: '240px',
             flexShrink: 0,
             display: 'none'
           }} className="mg-mobile-hidden">
@@ -175,9 +184,9 @@ const Marketplace: React.FC = () => {
               padding: '16px',
               border: '1px solid #e6e6e6'
             }}>
-              <h3 style={{ 
-                fontSize: '1rem', 
-                fontWeight: '600', 
+              <h3 style={{
+                fontSize: '1rem',
+                fontWeight: '600',
                 marginBottom: '16px',
                 color: '#333'
               }}>
@@ -216,9 +225,9 @@ const Marketplace: React.FC = () => {
                 ))}
               </div>
 
-              <h3 style={{ 
-                fontSize: '1rem', 
-                fontWeight: '600', 
+              <h3 style={{
+                fontSize: '1rem',
+                fontWeight: '600',
                 marginTop: '24px',
                 marginBottom: '16px',
                 color: '#333'
@@ -247,9 +256,9 @@ const Marketplace: React.FC = () => {
           {/* Products Grid */}
           <div style={{ flex: 1 }}>
             {/* Category Tabs */}
-            <div style={{ 
-              display: 'flex', 
-              gap: '8px', 
+            <div style={{
+              display: 'flex',
+              gap: '8px',
               marginBottom: '20px',
               borderBottom: '2px solid #E0E0E0'
             }}>
@@ -320,9 +329,9 @@ const Marketplace: React.FC = () => {
               border: '1px solid #e6e6e6',
               display: 'none'
             }} className="mg-desktop-hidden">
-              <div style={{ 
-                display: 'flex', 
-                gap: '8px', 
+              <div style={{
+                display: 'flex',
+                gap: '8px',
                 overflowX: 'auto',
                 paddingBottom: '8px'
               }}>
@@ -347,10 +356,10 @@ const Marketplace: React.FC = () => {
                   </button>
                 ))}
               </div>
-              
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
+
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
                 gap: '8px',
                 marginTop: '12px'
               }}>
@@ -388,9 +397,9 @@ const Marketplace: React.FC = () => {
                 {activeTab === 'ganado' && (
                   <>
                     {filteredAndSortedLivestock.length > 0 ? (
-                      <div style={{ 
-                        display: 'grid', 
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
                         gap: '24px'
                       }}>
                         {filteredAndSortedLivestock.map(item => (
@@ -430,6 +439,22 @@ const Marketplace: React.FC = () => {
                                 >
                                   Vendido
                                 </button>
+                                <button
+                                  onClick={() => handleDelete(item.id)}
+                                  style={{
+                                    padding: '8px 12px',
+                                    backgroundColor: '#991b1b',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    fontSize: '0.875rem',
+                                    fontWeight: '500',
+                                    cursor: 'pointer'
+                                  }}
+                                  title="Eliminar"
+                                >
+                                  Eliminar
+                                </button>
                               </div>
                             )}
                           </div>
@@ -442,19 +467,19 @@ const Marketplace: React.FC = () => {
                     )}
                   </>
                 )}
-                
+
                 {activeTab === 'fincas' && (
                   <>
                     {estates.length > 0 ? (
-                      <div style={{ 
-                        display: 'grid', 
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
                         gap: '28px'
                       }}>
                         {estates.map(estate => (
                           <div key={estate.id} style={{ marginBottom: '20px' }}>
-                            <EstateCard 
-                              estate={estate} 
+                            <EstateCard
+                              estate={estate}
                               onClick={() => navigate(`/estate/${estate.id}`)}
                             />
                             {isOwner() && estate.available && (

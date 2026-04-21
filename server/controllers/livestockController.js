@@ -143,7 +143,7 @@ const deleteLivestock = async (req, res) => {
             return res.status(404).json({ message: 'Livestock not found' });
         }
 
-        await livestock.remove(); // or findByIdAndDelete
+        await livestock.deleteOne(); // Mongoose 7/8/9 uses deleteOne()
         res.status(200).json({ id: req.params.id });
     } catch (error) {
         res.status(500).json({ message: error.message });

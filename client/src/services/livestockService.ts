@@ -32,3 +32,7 @@ export const updateLivestock = async (id: string, livestock: Partial<Livestock> 
 
     return response.data;
 };
+export const deleteLivestock = async (id: string): Promise<{ id: string }> => {
+    const response = await api.delete(`${LIVESTOCK_URL}/${id}`);
+    return response.data;
+};

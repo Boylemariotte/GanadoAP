@@ -3,42 +3,6 @@ import { Estate } from '../types/estate';
 
 export const mockLivestock: Livestock[] = [
   {
-    id: '1',
-    name: 'Vaca Girolando Premium',
-    breed: 'Girolando',
-    age: 4,
-    weight: 520,
-    price: 2500000,
-    purpose: 'leche',
-    healthStatus: 'excellent',
-    milkYield: 25,
-    births: 3,
-    location: 'Córdoba, Argentina',
-    images: [
-      'https://images.unsplash.com/photo-1580434659871-4c9b054d6dc7?w=400',
-      'https://images.unsplash.com/photo-1551698618-1dcef9ad3d26?w=400',
-      'https://images.unsplash.com/photo-1591485328236-b43cba247e6c?w=400'
-    ],
-    videos: [],
-    isLot: false,
-    lotSize: 1,
-    available: true,
-    seller: {
-      name: 'Ganadería El Roble',
-      phone: '+54 11 1234-5678',
-      email: 'contacto@ganaderiaroble.com',
-      rating: 4.8
-    },
-    description: 'Excelente ejemplar Girolando de alta producción lechera. Genética certificada, excelente temperamento.',
-    vaccinations: ['Triple viral', 'Brucelosis', 'Rabia'],
-    listedDate: '2024-01-15',
-    gestationTime: 9,
-    offspring: {
-      sex: 'hembra',
-      quantity: 1
-    },
-  },
-  {
     id: '2',
     name: 'Lote de 10 Novillos Hereford',
     breed: 'Hereford',
